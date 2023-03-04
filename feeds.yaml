@@ -6,15 +6,36 @@ feeds:
     - filter: shorter_than
       config:
         minutes: 10
-  #- name: rhlstp
-  #  feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
-  #  filters:
-  #  - filter: regex_exclude
-  #    config:
-  #      field: title
-  #      pattern: '^RHLSTP Book Club'
-  #- name: smart enough to know better
-  #  feed_url: https://smartenough.org/feed
-  #  filters:
-  #  - name: regex_title_exclude
-  #    value: 'Book Club'
+    fiddles:
+    - fiddle: append_to_title
+      config:
+        string: "[fiddled]"
+    - fiddle: feed_image
+      config:
+        url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
+
+  - name: rhlstp
+    feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
+    file_name: rhlstp.rss
+    filters:
+    - filter: regex_exclude
+      config:
+        field: title
+        pattern: '^RHLSTP Book Club'
+    fiddles:
+    - fiddle: append_to_title
+      config:
+        string: "[fiddled]"
+
+  - name: smart enough to know better
+    feed_url: https://smartenough.org/feed
+    file_name: se2kb.rss
+    filters:
+    - filter: regex_exclude
+      config:
+        field: title
+        pattern: 'Book Club'
+    fiddles:
+    - fiddle: append_to_title
+      config:
+        string: "[fiddled]"

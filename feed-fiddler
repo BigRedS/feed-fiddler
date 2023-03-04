@@ -1,43 +1,72 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import os
-import feedparser
 import yaml
 import logging
 import re
+
+import boto3
 
 import xml.etree.ElementTree as ET
 import urllib.request
 
 import json
 
+def main():
+    logging.basicConfig(encoding='utf-8', level=logging.INFO)
+    if 'LOGLEVEL' in os.environ:
+        logging.getLogger().setLevel(os.environ['LOGLEVEL'])
 
-def filter_rss_feed(url):
+    config_file = './feeds.yaml'
+    if 'CONFIG_FILE' in os.environ:
+        config_file = os.environ['CONFIG_FILE']
 
-    response = urllib.request.urlopen(url)
-    data = response.read();
-    rss = data.decode('utf-8')
+    config = {}
+    with open(config_file, "r") as file:
+        try:
+            config = yaml.safe_load(file)
+        except yaml.YAMLError as err:
+            print(err)
 
+    for feed in config['feeds']:
+        logging.info(f"Processing feed '{feed['name']}' from '{feed['feed_url']}'")
+        root = filter_rss_feed( feed )
+        rss = ET.tostring(root, encoding='unicode', method='xml')
+        write_feed(feed, rss)
+
+
+# Given a feed (a hash from the feeds.yaml file), downloads the RSS and uses
+# ElementTree to be able to modify it.
+# Then applies fiddles (which are feed-wide) and filters (which operate per-episode)
+# Returns the ET representation of the feed
+def filter_rss_feed(feed):
+    rss = download_file(feed['feed_url'])
     root = ET.fromstring(rss)
 
-    #for item in root.findall('./channel/item'):
+    for fiddle in feed['fiddles']:
+        fiddle_dispatch[fiddle['fiddle']]( root, fiddle['config'])
+
+    # An 'item' is an episode in a 'channel' which is what you'd think of as a 'feed'
     channel = root.find('channel')
     for item in root.iter(tag='item'):
         episode = {}
         for field in item.findall('./'):
             tag=re.sub('{\S+}', '', field.tag)
-            if tag in episode:
-               logging.error(f"Tag '{tag}' already defined (as '{episode['tag']}') in feed")
+            #TODO: Figure out what's going on here (rhlstp breaks it)
+            #if tag in episode:
+            #   logging.error(f"Tag '{tag}' already defined (as '{episode['tag']}') in feed")
             episode[tag] = field.text
 
+        # A filter function returns 0 if it wants to remove the episode, 1 if it wants
+        # to remove it. Default to keep
         keep = 1
         for filter in feed['filters']:
             keep = filter_dispatch[filter['filter']]( episode, filter['config'] )
             if keep < 1:
-               logging.info(f"Removing '{episode['guid']}'")
+               logging.debug(f"Removing '{episode['guid']}'")
                channel.remove(item)
-               #root.remove( root.findall(""))
 
     return root
+
 
 # Filter out episodes that are too short. This was triggered by the More or Less
 # podcast where the World Service programme is a ~9min excerpt from the Radio 4
@@ -93,30 +122,50 @@ def filter_regex_exclude(episode, config):
     logging.debug(f"Retaining '{episode['title']}'; field '{field_name}' does not match pattern '{pattern}'");
     return 1
 
-
 filter_dispatch = {
     'regex_exclude': filter_regex_exclude,
     'shorter_than': filter_shorter_than,
 }
 
+# Testing this got confusing quickly as the new feeds had the same name, so
+# this fiddle allows for changing the title
+def fiddle_append_to_title(feed, config):
+    logging.info(f"Appending '{config['string']}' to title")
+    title = feed.find('channel/title')
+    new_title = (f"{title.text} {config['string']}")
+    title.text = new_title
+
+    imagetitle = feed.find('channel/image/title')
+    if imagetitle:
+        new_title = (f"{imagetitle.text} {config['string']}")
+        imagetitle.text = new_title
+
+# Similarly, a new image might be useful!
+def fiddle_feed_image(feed, config):
+    logging.info(f"Editing image to '{config['url']}'")
+    image_url = feed.find('channel/image/url')
+    image_url.text = config['url']
+
+fiddle_dispatch = {
+    'append_to_title': fiddle_append_to_title,
+    'feed_image': fiddle_feed_image
+}
+
 # # #
 # #
 #
-logging.basicConfig(encoding='utf-8', level=logging.INFO)
-if os.environ['LOGLEVEL']:
-    logging.getLogger().setLevel(os.environ['LOGLEVEL'])
 
-config_file = './feeds.yaml'
-config = {}
+#
+def download_file(url):
+    logging.debug(f"Downloading {url}")
+    response = urllib.request.urlopen(url)
+    data = response.read();
+    content = data.decode('utf-8')
+    return content
 
-with open(config_file, "r") as file:
-  try:
-      config = yaml.safe_load(file)
-  except yaml.YAMLError as err:
-      print(err)
-
-for feed in config['feeds']:
-    logging.info(f"Processing feed '{feed['name']}' from '{feed['feed_url']}'")
-    root = filter_rss_feed( feed['feed_url'])
+def write_feed(feed, rss):
     with open(feed['file_name'], "w") as f:
-        print(ET.tostring(root, encoding='unicode', method='xml'), file=f)
+        print(rss, file=f)
+
+
+main()
