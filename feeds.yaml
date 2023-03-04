@@ -1,0 +1,20 @@
+feeds:
+  - name: more or less
+    feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
+    file_name: moreorless.rss
+    filters:
+    - filter: shorter_than
+      config:
+        minutes: 10
+  #- name: rhlstp
+  #  feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
+  #  filters:
+  #  - filter: regex_exclude
+  #    config:
+  #      field: title
+  #      pattern: '^RHLSTP Book Club'
+  #- name: smart enough to know better
+  #  feed_url: https://smartenough.org/feed
+  #  filters:
+  #  - name: regex_title_exclude
+  #    value: 'Book Club'
