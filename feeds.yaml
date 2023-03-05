@@ -1,7 +1,10 @@
 feeds:
   - name: more or less
     feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
-    file_name: moreorless.rss
+    output:
+      s3:
+        object: moreorless.rss
+        bucket: feed-fiddler
     filters:
     - filter: shorter_than
       config:
@@ -16,7 +19,10 @@ feeds:
 
   - name: rhlstp
     feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
-    file_name: rhlstp.rss
+    output:
+      s3:
+        object: rhlstp.rss
+        bucket: feed-fiddler
     filters:
     - filter: regex_exclude
       config:
@@ -29,7 +35,12 @@ feeds:
 
   - name: smart enough to know better
     feed_url: https://smartenough.org/feed
-    file_name: se2kb.rss
+    output:
+      file:
+        path: se2kb.rss
+      s3:
+        object: se2kb.rss
+        bucket: feed-fiddler
     filters:
     - filter: regex_exclude
       config:
@@ -39,3 +50,4 @@ feeds:
     - fiddle: append_to_title
       config:
         string: "[fiddled]"
+

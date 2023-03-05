@@ -155,7 +155,14 @@ fiddle_dispatch = {
 # #
 #
 
-#
+
+def upload_file_s3(content, config):
+    bucket_name = config['bucket']
+    object_name = config['object']
+    logging.info(f"S3 upload: writing object '{object_name}' to bucket '{bucket_name}'")
+    s3 = boto3.resource('s3')
+    s3.Object(bucket_name, object_name).put(Body=content, ACL='public-read')
+
 def download_file(url):
     logging.debug(f"Downloading {url}")
     response = urllib.request.urlopen(url)
@@ -164,8 +171,12 @@ def download_file(url):
     return content
 
 def write_feed(feed, rss):
-    with open(feed['file_name'], "w") as f:
-        print(rss, file=f)
+    if 'file' in feed['output']:
+        logging.info(f"Writing output feed to '{feed['output']['file']['path']}'")
+        with open(feed['output']['file']['path'], "w") as f:
+            print(rss, file=f)
+    if 's3' in feed['output']:
+        upload_file_s3(rss, feed['output']['s3'])
 
 
 main()
