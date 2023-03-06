@@ -3,7 +3,7 @@ import os
 import yaml
 import logging
 import re
-
+import operator
 import boto3
 
 import xml.etree.ElementTree as ET
@@ -72,9 +72,10 @@ def filter_rss_feed(feed):
 # podcast where the World Service programme is a ~9min excerpt from the Radio 4
 # one, and both are on the same feed
 #
-# Expects a single key in the config, one of 'minutes', 'seconds' or 'hours' and
-# filters out any episode whose 'duration' field is shorter than that
-def filter_shorter_than(episode, config):
+# Expects a threshold key in the config, one of 'minutes', 'seconds' or 'hours', and
+# an operator (lessThan, lessThanOrEqualTo, etc.) to use to compare the duration with
+# the threshold
+def filter_duration(episode, config):
 
     logging.debug(f"Running shorter_than filter on '{episode['title']}' with config '{config}'");
     duration_seconds = -1
@@ -90,15 +91,27 @@ def filter_shorter_than(episode, config):
         logging.debug(f"Value: {config}")
         return 1
 
+    operators = {
+        'lessThan':             operator.lt,
+        'lessThanOrEqualTo':    operator.le,
+        'greaterThan':          operator.gt,
+        'greaterThanOrEqualTo': operator.ge,
+        'equalTo':              operator.eq,
+        'notEqualTo':           operator.ne,
+    }
+    if not config['operator'] in operators:
+        logging.error(f"Invalid operator '{config['operator']}")
+
     #TODO: Find other ways duration might be encoded
     if 'duration' in episode:
         episode_duration = int(episode['duration'])
-        if episode_duration < duration_seconds:
-            logging.info(f"Filtering out '{episode['title']}'; duration of '{episode['duration']}' shorter than filter value of '{duration_seconds}' seconds)")
+        if operators[config['operator']]( episode_duration , duration_seconds):
+            logging.info(f"Filtering out '{episode['title']}'; duration of '{episode['duration']}' not '{config['operator']}' '{duration_seconds}' seconds)")
             return 0
     else:
         logging.info(f"Retaining '{episode['title']}'; it has no 'itunes duration' field");
         return 0
+
 
     logging.debug(f"Retaining '{episode['title']}'; duration of '{episode['duration']}' greater than or equal to filter value of '{duration_seconds}' seconds ")
     return 1
@@ -124,7 +137,7 @@ def filter_regex_exclude(episode, config):
 
 filter_dispatch = {
     'regex_exclude': filter_regex_exclude,
-    'shorter_than': filter_shorter_than,
+    'duration': filter_duration
 }
 
 # Testing this got confusing quickly as the new feeds had the same name, so

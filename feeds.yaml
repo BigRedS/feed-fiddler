@@ -6,9 +6,10 @@ feeds:
         object: moreorless.rss
         bucket: feed-fiddler
     filters:
-    - filter: shorter_than
+    - filter: duration
       config:
-        minutes: 10
+        operator: lessThan
+        minutes: 12
     fiddles:
     - fiddle: append_to_title
       config:

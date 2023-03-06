@@ -10,8 +10,7 @@ It's designed to be run periodically, where it'll fetch all the feeds it is to f
 
 Configuring is in the `feeds.yaml` file, where a list of feeds is defined, each with a list of filters. The path to this file can be set with the env var `CONFIG_FILE`
 
-More Or Less is a show on Radio 4 about numbers. The BBC World Service puts out a 9 minute excerpt, too. Their podcast feed is mede up of both the R4 and the World Service transmissions, which means each short episode is just a repeat of a part of a longer episode.
-
+More Or Less is a show on Radio 4 about numbers. The BBC World Service puts out a 9 minute excerpt, too. Their podcast feed is mede up of both the R4 and the World Service transmissions, which means each short episode is just a repeat of a part of a longer episode. Here, we filter out those short repeats:
 
 ```
 feeds:
@@ -19,9 +18,10 @@ feeds:
     feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
     file_name: moreorless.rss
     filters:
-    - filter: shorter_than
+    - filter: duration
       config:
         minutes: 10
+        operator: lessThan
     fiddles:
     - fiddle: append_to_title
       config:
@@ -54,9 +54,11 @@ A filter is a function that accepts two arguments, `episode` is a dictionary of 
 
 There are currently two filters:
 
-* `shorter_than` Removes episodes with a short `duration` field.
+* `duration` Removes episodes based on the duration
 
- The `config` block may set either `seconds`, `minutes` or `hours`, and any episode shorter than this is removed. Those with no `duration` field are kept.
+The `config` blog has two keys. One is one of `seconds`, `minutes` or `hours`, setting the length to use as a threshold. The other is the `operator` key, one of `lessThan`, `lessThanOrEqualTo`, `greaterThan`, `greaterThanOrEqualTo`, `equalTo`, `notEqualTo`.
+
+For each episode with a `duration` field, the `duration` is compared with the threshold; those matching it are filtered out. Episodes without a `duration` field are always kept.
 
 * `regex_exclude` Removes episodes where a field matches a regex.
 
