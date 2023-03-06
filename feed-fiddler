@@ -121,22 +121,39 @@ def filter_duration(episode, config):
 #
 # Config should have two keys, a 'pattern', and a 'field' to apply it to, and optionally
 # a 'case_insensitive' which, if set, will cause the match to be case-insensitive
-def filter_regex_exclude(episode, config):
+def filter_regex(episode, config):
     logging.debug(f"Running regex_exclude filter on '{episode['title']}' with config '{config}'")
 
     field_name = config['field']
     pattern = config['pattern']
+    action = config['action']
 
-    if re.search( pattern, episode[field_name] ):
-        logging.info(f"Filtering out '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
-        logging.debug(f"Field '{field_name}': {episode[field_name]}' ")
-        return 0
+    if not field_name in episode:
+        logging.info(f"Retaining '{episode['title']}'; it has no '{field_name}' field to match against")
 
-    logging.debug(f"Retaining '{episode['title']}'; field '{field_name}' does not match pattern '{pattern}'");
+    episode_matches = 0;
+
+    if config['action'] == 'include':
+        if re.search( pattern, episode[field_name] ):
+            logging.info(f"Retaining '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
+            return 1
+        else:
+            logging.debug(f"Filtering out '{episode['title']}'; field '{field_name}' does not match pattern '{pattern}'");
+            return 0
+    elif config['action'] == 'exclude':
+        if re.search( pattern, episode[field_name] ):
+            logging.info(f"Filtering out '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
+            return 0
+        else:
+            logging.debug(f"Retaining '{episode['title']}'; field '{field_name}' does not match pattern '{pattern}'");
+            return 1
+    else:
+        logging.error(f"Action '{config['action']}' invalid; must be either 'include' or 'exclude'")
+
     return 1
 
 filter_dispatch = {
-    'regex_exclude': filter_regex_exclude,
+    'regex': filter_regex,
     'duration': filter_duration
 }
 

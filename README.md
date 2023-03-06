@@ -54,15 +54,22 @@ A filter is a function that accepts two arguments, `episode` is a dictionary of 
 
 There are currently two filters:
 
-* `duration` Removes episodes based on the duration
+### `duration` Filters episodes based on their duration
 
-The `config` blog has two keys. One is one of `seconds`, `minutes` or `hours`, setting the length to use as a threshold. The other is the `operator` key, one of `lessThan`, `lessThanOrEqualTo`, `greaterThan`, `greaterThanOrEqualTo`, `equalTo`, `notEqualTo`.
+The config block has two keys:
+
+* `seconds`, `minutes`, or `hours`: the episode duration (as an integer) to use as a threshold
+* `operator`: one of `lessThan`, `lessThanOrEqualTo`, `greaterThan`, `greaterThanOrEqualTo`, `equalTo`, `notEqualTo`.
 
 For each episode with a `duration` field, the `duration` is compared with the threshold; those matching it are filtered out. Episodes without a `duration` field are always kept.
 
-* `regex_exclude` Removes episodes where a field matches a regex.
+### `regex` Filters episodes where a field matches a regex.
 
-The `config` block has a `field` and a `pattern` argument; if the `field` of an episode is matched by the `pattern`, that episode is dropped from the feed.
+The config block has three keys:
+* `field`: the name of the field to match ('title' is a common one)
+* `pattern`: a regex to match the field's contents with
+* `action`: one of `exclude` or `include`; whether the resulting feed should have nothing that matches, or only thos episodes that match, respectively.
+
 
 ## Fiddles
 

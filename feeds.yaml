@@ -25,10 +25,11 @@ feeds:
         object: rhlstp.rss
         bucket: feed-fiddler
     filters:
-    - filter: regex_exclude
+    - filter: regex
       config:
         field: title
         pattern: '^RHLSTP Book Club'
+        action: exclude
     fiddles:
     - fiddle: append_to_title
       config:
@@ -43,10 +44,11 @@ feeds:
         object: se2kb.rss
         bucket: feed-fiddler
     filters:
-    - filter: regex_exclude
+    - filter: regex
       config:
         field: title
         pattern: 'Book Club'
+        action: exclude
     fiddles:
     - fiddle: append_to_title
       config:
