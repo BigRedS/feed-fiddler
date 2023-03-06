@@ -4,7 +4,7 @@ feeds:
     output:
       s3:
         object: moreorless.rss
-        bucket: feed-fiddler
+        bucket: feed-fiddler-testing
     filters:
     - filter: duration
       config:
@@ -23,7 +23,7 @@ feeds:
     output:
       s3:
         object: rhlstp.rss
-        bucket: feed-fiddler
+        bucket: feed-fiddler-testing
     filters:
     - filter: regex
       config:
@@ -42,7 +42,7 @@ feeds:
         path: se2kb.rss
       s3:
         object: se2kb.rss
-        bucket: feed-fiddler
+        bucket: feed-fiddler-testing
     filters:
     - filter: regex
       config:
