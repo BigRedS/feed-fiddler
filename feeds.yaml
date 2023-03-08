@@ -14,7 +14,7 @@ feeds:
     - fiddle: append_to_title
       config:
         string: "[fiddled]"
-    - fiddle: feed_image
+    - fiddle: replace_feed_image
       config:
         url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
 

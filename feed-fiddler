@@ -193,15 +193,23 @@ def fiddle_append_to_title(feed, config):
         new_title = (f"{imagetitle.text} {config['string']}")
         imagetitle.text = new_title
 
+def fiddle_replace_title(feed, config):
+    logging.info(f"Setting title to '{config['string']}'")
+    title = feed.find('channel/title')
+    title.text = config['string']
+
 # Similarly, a new image might be useful!
-def fiddle_feed_image(feed, config):
+def fiddle_replace_feed_image(feed, config):
     logging.info(f"Editing image to '{config['url']}'")
     image_url = feed.find('channel/image/url')
-    image_url.text = config['url']
+    if image_url:
+        image_url.text = config['url']
+    #TODO: Fixup images defined in other ways (like se2kb)
 
 fiddle_dispatch = {
     'append_to_title': fiddle_append_to_title,
-    'feed_image': fiddle_feed_image
+    'replace_title' : fiddle_replace_title,
+    'replace_feed_image': fiddle_replace_feed_image
 }
 
 # # #
