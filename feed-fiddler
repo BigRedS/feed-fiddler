@@ -42,8 +42,9 @@ def filter_rss_feed(feed):
     rss = download_file(feed['feed_url'])
     root = ET.fromstring(rss)
 
-    for fiddle in feed['fiddles']:
-        fiddle_dispatch[fiddle['fiddle']]( root, fiddle['config'])
+    if 'fiddles' in feed:
+        for fiddle in feed['fiddles']:
+            fiddle_dispatch[fiddle['fiddle']]( root, fiddle['config'])
 
     # An 'item' is an episode in a 'channel' which is what you'd think of as a 'feed'
     channel = root.find('channel')
@@ -58,12 +59,13 @@ def filter_rss_feed(feed):
 
         # A filter function returns 0 if it wants to remove the episode, 1 if it wants
         # to remove it. Default to keep
-        keep = 1
-        for filter in feed['filters']:
-            keep = filter_dispatch[filter['filter']]( episode, filter['config'] )
-            if keep < 1:
-               logging.debug(f"Removing '{episode['guid']}'")
-               channel.remove(item)
+        if 'filters' in feed:
+            keep = 1
+            for filter in feed['filters']:
+                keep = filter_dispatch[filter['filter']]( episode, filter['config'] )
+                if keep < 1:
+                    logging.debug(f"Removing '{episode['guid']}'")
+                    channel.remove(item)
 
     return root
 
