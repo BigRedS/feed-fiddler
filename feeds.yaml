@@ -1,3 +1,4 @@
+# Filter out episodes from More Or Less that are less than 12 minutes long
 feeds:
   - name: more or less
     feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
@@ -18,23 +19,7 @@ feeds:
       config:
         url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
 
-  - name: rhlstp
-    feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
-    output:
-      s3:
-        object: rhlstp.rss
-        bucket: feed-fiddler-testing
-    filters:
-    - filter: regex
-      config:
-        field: title
-        pattern: '^RHLSTP Book Club'
-        action: exclude
-    fiddles:
-    - fiddle: append_to_title
-      config:
-        string: "[fiddled]"
-
+# Remove the book club episodes from Smart Enough To Know Better
   - name: smart enough to know better
     feed_url: https://smartenough.org/feed
     output:
@@ -52,8 +37,10 @@ feeds:
     fiddles:
     - fiddle: append_to_title
       config:
-        string: "[fiddled]"
+        string: "[no books]"
 
+# Extract the Book Club episodes from RHLSTP and SE2KB, and create a new Book Club
+# feed with those episodes from both
   - name: se2kb books
     feed_url: https://smartenough.org/feed
     filters:
@@ -79,9 +66,16 @@ feeds:
         bucket: feed-fiddler-testing
         object: rhlstp-books.rss
   - name: book club
-    feed_url: https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/se2kb-books.rss
+    feed_url: https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/rhlstp-books.rss
     merge_in:
-      - https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/rhlstp.rss
+      - https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/se2kb-books.rss
+    fiddles:
+      - fiddle: replace_title
+        config:
+          string: Book Club
+      - fiddle: replace_feed_image
+        config:
+          url: https://img.freepik.com/free-vector/hand-drawn-flat-design-stack-books_23-2149334862.jpg
     output:
       s3:
         bucket: feed-fiddler-testing
