@@ -54,3 +54,35 @@ feeds:
       config:
         string: "[fiddled]"
 
+  - name: se2kb books
+    feed_url: https://smartenough.org/feed
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: Book Club
+          action: include
+    output:
+      s3:
+          bucket: feed-fiddler-testing
+          object: se2kb-books.rss
+  - name: rhlstp books
+    feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: Book Club
+          action: include
+    output:
+      s3:
+        bucket: feed-fiddler-testing
+        object: rhlstp-books.rss
+  - name: book club
+    feed_url: https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/se2kb-books.rss
+    merge_in:
+      - https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/rhlstp.rss
+    output:
+      s3:
+        bucket: feed-fiddler-testing
+        object: book-club.rss

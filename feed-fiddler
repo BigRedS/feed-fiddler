@@ -30,9 +30,28 @@ def main():
     for feed in config['feeds']:
         logging.info(f"Processing feed '{feed['name']}' from '{feed['feed_url']}'")
         root = filter_rss_feed( feed )
+        if 'merge_in' in feed:
+            logging.debug(f"Merging")
+            for url in feed['merge_in']:
+                logging.debug(f"Merging in feed from '{url}'")
+                merge_rss = ET.fromstring(download_file(url))
+            root = merge_feeds(merge_rss, root)
+
         rss = ET.tostring(root, encoding='unicode', method='xml')
         write_feed(feed, rss)
 
+# Merge source's episodes into dest's channel
+# both should be ET objects
+def merge_feeds(source, dest):
+    #TODO: sort the items, though so far it seems podcast apps are happy to do that for me
+    dest_channel = dest.find('channel')
+    for item in source.iter(tag='item'):
+        episode = get_episode_tags(item)
+        if 'pubDate' in episode:
+            logging.debug(f"Merging in '{episode['title']}' from '{episode['pubDate']}'")
+            dest_channel.append(item)
+
+    return dest
 
 # Given a feed (a hash from the feeds.yaml file), downloads the RSS and uses
 # ElementTree to be able to modify it.
@@ -49,14 +68,7 @@ def filter_rss_feed(feed):
     # An 'item' is an episode in a 'channel' which is what you'd think of as a 'feed'
     channel = root.find('channel')
     for item in root.iter(tag='item'):
-        episode = {}
-        for field in item.findall('./'):
-            tag=re.sub('{\S+}', '', field.tag)
-            #TODO: Figure out what's going on here (rhlstp breaks it)
-            #if tag in episode:
-            #   logging.error(f"Tag '{tag}' already defined (as '{episode['tag']}') in feed")
-            episode[tag] = field.text
-
+        episode = get_episode_tags(item)
         # A filter function returns 0 if it wants to remove the episode, 1 if it wants
         # to remove it. Default to keep
         if 'filters' in feed:
@@ -69,6 +81,15 @@ def filter_rss_feed(feed):
 
     return root
 
+def get_episode_tags(item):
+    episode = {}
+    for field in item.findall('./'):
+        tag=re.sub('{\S+}', '', field.tag)
+        #TODO: Figure out what's going on here (rhlstp breaks it)
+        #if tag in episode:
+        #   logging.error(f"Tag '{tag}' already defined (as '{episode['tag']}') in feed")
+        episode[tag] = field.text
+    return episode
 
 # Filter out episodes that are too short. This was triggered by the More or Less
 # podcast where the World Service programme is a ~9min excerpt from the Radio 4
