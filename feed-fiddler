@@ -129,10 +129,10 @@ def filter_duration(episode, config):
     if 'duration' in episode:
         episode_duration = int(episode['duration'])
         if operators[config['operator']]( episode_duration , duration_seconds):
-            logging.info(f"Filtering out '{episode['title']}'; duration of '{episode['duration']}' not '{config['operator']}' '{duration_seconds}' seconds)")
+            logging.debug(f"Filtering out '{episode['title']}'; duration of '{episode['duration']}' not '{config['operator']}' '{duration_seconds}' seconds)")
             return 0
     else:
-        logging.info(f"Retaining '{episode['title']}'; it has no 'itunes duration' field");
+        logging.debug(f"Retaining '{episode['title']}'; it has no 'itunes duration' field");
         return 0
 
 
@@ -152,20 +152,20 @@ def filter_regex(episode, config):
     action = config['action']
 
     if not field_name in episode:
-        logging.info(f"Retaining '{episode['title']}'; it has no '{field_name}' field to match against")
+        logging.debug(f"Retaining '{episode['title']}'; it has no '{field_name}' field to match against")
 
     episode_matches = 0;
 
     if config['action'] == 'include':
         if re.search( pattern, episode[field_name] ):
-            logging.info(f"Retaining '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
+            logging.debug(f"Retaining '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
             return 1
         else:
             logging.debug(f"Filtering out '{episode['title']}'; field '{field_name}' does not match pattern '{pattern}'");
             return 0
     elif config['action'] == 'exclude':
         if re.search( pattern, episode[field_name] ):
-            logging.info(f"Filtering out '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
+            logging.debug(f"Filtering out '{episode['title']}'; field '{field_name}' matches pattern '{pattern}'");
             return 0
         else:
             logging.debug(f"Retaining '{episode['title']}'; field '{field_name}' does not match pattern '{pattern}'");
