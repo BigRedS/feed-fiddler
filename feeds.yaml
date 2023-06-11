@@ -1,3 +1,6 @@
+# This used to be an illustrative example, but now it's just the config I'm using,
+# hopefully with some useful comments.
+
 # Filter out episodes from More Or Less that are less than 12 minutes long
 feeds:
   - name: more or less
@@ -5,7 +8,7 @@ feeds:
     output:
       s3:
         object: moreorless.rss
-        bucket: feed-fiddler-testing
+        bucket: feed-fiddler
     filters:
     - filter: duration
       config:
@@ -14,10 +17,49 @@ feeds:
     fiddles:
     - fiddle: append_to_title
       config:
-        string: "[fiddled]"
+        string: "[R4]"
     - fiddle: replace_feed_image
       config:
         url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
+
+# Remove the book club episodes from RHLSTP
+  - name: rhlstp
+    feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
+    output:
+      s3:
+        object: rhlstp.rss
+        bucket: feed-fiddler
+    filters:
+    - filter: regex
+      config:
+        field: title
+        pattern: '^RHLSTP Book Club'
+        action: exclude
+    fiddles:
+    - fiddle: append_to_title
+      config:
+        string: "[no book club]"
+
+
+# Remove the various serialisations from We Have Ways
+  - name: wehaveways
+    feed_url: https://feeds.acast.com/public/shows/e03faa80-0d1d-48ec-b56e-8682ef62761e
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: Between The Lines
+          action: exclude
+      - filter: regex
+        config:
+          field: title
+          pattern: Family Stories Series
+          action: exclude
+    output:
+      s3:
+        bucket: feed-fiddler
+        object: wehaveways.rss
+
 
 # Remove the book club episodes from Smart Enough To Know Better
   - name: smart enough to know better
@@ -27,7 +69,7 @@ feeds:
         path: se2kb.rss
       s3:
         object: se2kb.rss
-        bucket: feed-fiddler-testing
+        bucket: feed-fiddler
     filters:
     - filter: regex
       config:
@@ -38,6 +80,7 @@ feeds:
     - fiddle: append_to_title
       config:
         string: "[no books]"
+
 
 # Extract the Book Club episodes from RHLSTP and SE2KB, and create a new Book Club
 # feed with those episodes from both
@@ -51,7 +94,7 @@ feeds:
           action: include
     output:
       s3:
-          bucket: feed-fiddler-testing
+          bucket: feed-fiddler
           object: se2kb-books.rss
   - name: rhlstp books
     feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
@@ -63,12 +106,12 @@ feeds:
           action: include
     output:
       s3:
-        bucket: feed-fiddler-testing
+        bucket: feed-fiddler
         object: rhlstp-books.rss
   - name: book club
-    feed_url: https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/rhlstp-books.rss
+    feed_url: https://feed-fiddler.s3.eu-west-2.amazonaws.com/rhlstp-books.rss
     merge_in:
-      - https://feed-fiddler-testing.s3.eu-west-2.amazonaws.com/se2kb-books.rss
+      - https://feed-fiddler.s3.eu-west-2.amazonaws.com/se2kb-books.rss
     fiddles:
       - fiddle: replace_title
         config:
@@ -78,5 +121,5 @@ feeds:
           url: https://img.freepik.com/free-vector/hand-drawn-flat-design-stack-books_23-2149334862.jpg
     output:
       s3:
-        bucket: feed-fiddler-testing
+        bucket: feed-fiddler
         object: book-club.rss
