@@ -34,7 +34,7 @@ def main():
             logging.debug(f"Merging")
             for url in feed['merge_in']:
                 logging.debug(f"Merging in feed from '{url}'")
-                merge_rss = ET.fromstring(download_file(url))
+                merge_rss = ET.fromstring(download_rss_file(url))
             root = merge_feeds(merge_rss, root)
 
         rss = ET.tostring(root, encoding='unicode', method='xml')
@@ -58,7 +58,7 @@ def merge_feeds(source, dest):
 # Then applies fiddles (which are feed-wide) and filters (which operate per-episode)
 # Returns the ET representation of the feed
 def filter_rss_feed(feed):
-    rss = download_file(feed['feed_url'])
+    rss = download_rss_file(feed['feed_url'])
     root = ET.fromstring(rss)
 
     if 'fiddles' in feed:
@@ -223,6 +223,12 @@ def upload_file_s3(content, config):
     logging.info(f"S3 upload: writing object '{object_name}' to bucket '{bucket_name}'")
     s3 = boto3.resource('s3')
     s3.Object(bucket_name, object_name).put(Body=content, ACL='public-read')
+
+def download_rss_file(url):
+    content = download_file(url)
+    if content.startswith('<html') or content.startswith('<!doctype html>'):
+        logging.error('Tried to download an RSS file, got HTML, from ' + url)
+    return content
 
 def download_file(url):
     logging.debug(f"Downloading {url}")
