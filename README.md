@@ -135,3 +135,13 @@ output:
 ```
 
 feed-fiddler sets a public-read ACL on the uploaded object, so the bucket must allow the setting of ACLs on objects
+
+# Testing
+
+When testing changes, you can pass the `name` of a feed (or a list of them) as arguments to cause only those to be processed.
+
+Some environment variables are supported:
+
+* `FF_FEED_TO_STDOUT` being set to anything causes feed-fiddler to ignore the feed-writing config, and write each feed to STDOUT
+* `FF_NO_WRITE_FEED` being set to anything causes feed-fiddler to just discard the created feeds, not writing the anywhere. This overrides FF_FEED_TO_STDOUT.
+* `LOGLEVEL` is provided by the `logging` library; set this to `DEBUG` to get a lot of output from the filtering and fiddling processes

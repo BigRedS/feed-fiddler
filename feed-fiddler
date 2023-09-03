@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import os
+import sys
 import yaml
 import logging
 import re
@@ -27,7 +28,12 @@ def main():
         except yaml.YAMLError as err:
             print(err)
 
+    sys.argv.pop(0)
     for feed in config['feeds']:
+        if sys.argv:
+            if feed['name'] not in sys.argv:
+                logging.info(f"Skipping feed '{feed['name']}'; not passed as an argument")
+                continue
         logging.info(f"Processing feed '{feed['name']}' from '{feed['feed_url']}'")
         root = filter_rss_feed( feed )
         if 'merge_in' in feed:
@@ -238,6 +244,13 @@ def download_file(url):
     return content
 
 def write_feed(feed, rss):
+    if 'FF_NO_WRITE_FEED' in os.environ:
+        logging.info("FF_NO_WRITE_FEED set; not writing feed")
+        return
+    if 'FF_FEED_TO_STDOUT' in os.environ:
+        logging.info("FF_FEED_TO_STDOUT set; writing feed to stdout")
+        print(rss)
+        return
     if 'file' in feed['output']:
         logging.info(f"Writing output feed to '{feed['output']['file']['path']}'")
         with open(feed['output']['file']['path'], "w") as f:
