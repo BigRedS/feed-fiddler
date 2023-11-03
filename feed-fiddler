@@ -75,6 +75,7 @@ def filter_rss_feed(feed):
     channel = root.find('channel')
     for item in root.iter(tag='item'):
         episode = get_episode_tags(item)
+        logging.debug(f"Starting {episode['guid']} {episode['title']}")
         # A filter function returns 0 if it wants to remove the episode, 1 if it wants
         # to remove it. Default to keep
         if 'filters' in feed:
@@ -82,7 +83,6 @@ def filter_rss_feed(feed):
             for filter in feed['filters']:
                 keep = filter_dispatch[filter['filter']]( episode, filter['config'] )
                 if keep < 1:
-                    logging.debug(f"Removing '{episode['guid']}'")
                     channel.remove(item)
 
     return root
@@ -106,18 +106,17 @@ def get_episode_tags(item):
 # the threshold
 def filter_duration(episode, config):
 
-    logging.debug(f"Running shorter_than filter on '{episode['title']}' with config '{config}'");
-    duration_seconds = -1
+    duration_filter_seconds = -1
     if 'seconds' in config:
-      duration_seconds = int(config['seconds'])
+      duration_filter_seconds = int(config['seconds'])
     elif 'minutes' in config:
-      duration_seconds = int(config['minutes']) * 60
+      duration_filter_seconds = int(config['minutes']) * 60
     elif 'hours' in config:
-      duration_seconds = int(config['hours']) * 60 * 60
+      duration_filter_seconds = int(config['hours']) * 60 * 60
 
-    if duration_seconds < 0:
-        logging.debug("Could not parse duration out of value; aborting filter")
-        logging.debug(f"Value: {config}")
+    if duration_filter_seconds < 0:
+        logging.error("Could not parse duration out of value; aborting filter")
+        logging.error(f"Value: {config}")
         return 1
 
     operators = {
@@ -131,18 +130,20 @@ def filter_duration(episode, config):
     if not config['operator'] in operators:
         logging.error(f"Invalid operator '{config['operator']}")
 
+
     #TODO: Find other ways duration might be encoded
     if 'duration' in episode:
         episode_duration = int(episode['duration'])
-        if operators[config['operator']]( episode_duration , duration_seconds):
-            logging.debug(f"Filtering out '{episode['title']}'; duration of '{episode['duration']}' not '{config['operator']}' '{duration_seconds}' seconds)")
+        if operators[config['operator']]( episode_duration , duration_filter_seconds):
+            logging.debug(f"  Filtering out; duration of '{episode['duration']}' is {config['operator']} filter threshold of '{duration_filter_seconds}'")
             return 0
+        else:
+            logging.debug(f"  Retaining; duration of '{episode['duration']}' is not {config['operator']} filter threshold of '{duration_filter_seconds}'")
     else:
         logging.debug(f"Retaining '{episode['title']}'; it has no 'itunes duration' field");
         return 0
 
 
-    logging.debug(f"Retaining '{episode['title']}'; duration of '{episode['duration']}' greater than or equal to filter value of '{duration_seconds}' seconds ")
     return 1
 
 # Filter out episodes with particular phrases in the fields. This was triggered by a
