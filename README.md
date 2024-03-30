@@ -145,3 +145,15 @@ Some environment variables are supported:
 * `FF_FEED_TO_STDOUT` being set to anything causes feed-fiddler to ignore the feed-writing config, and write each feed to STDOUT
 * `FF_NO_WRITE_FEED` being set to anything causes feed-fiddler to just discard the created feeds, not writing the anywhere. This overrides FF_FEED_TO_STDOUT.
 * `LOGLEVEL` is provided by the `logging` library; set this to `DEBUG` to get a lot of output from the filtering and fiddling processes
+
+
+# Running in Python venv
+
+You will need python and virtualenv installed. See
+
+https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
+
+in the root of the repo, do
+
+    source .venv/bin/activate
+    pip install -r ./requirements.txt
