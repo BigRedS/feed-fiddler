@@ -240,7 +240,7 @@ def upload_file_s3(content, config):
     object_name = config['object']
     logging.info(f"S3 upload: writing object '{object_name}' to bucket '{bucket_name}'")
     s3 = boto3.resource('s3')
-    s3.Object(bucket_name, object_name).put(Body=content, ACL='public-read')
+    s3.Object(bucket_name, object_name).put(Body=content, ACL='public-read', ContentType='application/rss+xml')
 
     region = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
     url="https://" + bucket_name + ".s3." + region + ".amazonaws.com/" + object_name;
