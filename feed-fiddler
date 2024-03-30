@@ -231,6 +231,11 @@ def upload_file_s3(content, config):
     s3 = boto3.resource('s3')
     s3.Object(bucket_name, object_name).put(Body=content, ACL='public-read')
 
+    region = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
+    url="https://" + bucket_name + ".s3." + region + ".amazonaws.com/" + object_name;
+
+    return url
+
 def download_rss_file(url):
     content = download_file(url)
     if content.startswith('<html') or content.startswith('<!doctype html>'):
