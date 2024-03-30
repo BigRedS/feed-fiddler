@@ -22,6 +22,30 @@ feeds:
       config:
         url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
 
+# Remove the 'sponsored' and 'Long Read' episodes from the New Stateman
+
+  - name: New Statesman
+    feed_url: https://feeds.acast.com/public/shows/6b2fc9ba-b9b7-4b7a-b980-e0024facd926
+    output:
+      s3:
+        object: newstatesman.rss
+        bucket: feed-fiddler
+    filters:
+    - filter: regex
+      config:
+        field: title
+        pattern: 'Sponsored'
+        action: exclude
+    - filter: regex
+      config:
+        field: title
+        pattern: 'Audio Long Read'
+        action: exclude
+    fiddles:
+    - fiddle: append_to_title
+      config:
+        string: "[filtered]"
+
 # Remove the book club episodes from RHLSTP
   - name: rhlstp
     feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
