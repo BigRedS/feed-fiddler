@@ -47,7 +47,6 @@ def main():
 
         rss = ET.tostring(root, encoding='unicode', method='xml')
         written_feeds = write_feed(feed, rss)
-        print(written_feeds)
         all_written_feeds.append( written_feeds )
 
 
