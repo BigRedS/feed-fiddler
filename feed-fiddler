@@ -13,6 +13,7 @@ import urllib.request
 import json
 
 def main():
+    all_written_feeds = []
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
     if 'LOGLEVEL' in os.environ:
         logging.getLogger().setLevel(os.environ['LOGLEVEL'])
@@ -35,6 +36,7 @@ def main():
                 logging.info(f"Skipping feed '{feed['name']}'; not passed as an argument")
                 continue
         logging.info(f"Processing feed '{feed['name']}' from '{feed['feed_url']}'")
+
         root = filter_rss_feed( feed )
         if 'merge_in' in feed:
             logging.debug(f"Merging")
@@ -44,7 +46,17 @@ def main():
             root = merge_feeds(merge_rss, root)
 
         rss = ET.tostring(root, encoding='unicode', method='xml')
-        write_feed(feed, rss)
+        written_feeds = write_feed(feed, rss)
+        print(written_feeds)
+        all_written_feeds.append( written_feeds )
+
+
+    print("Wrote feeds:")
+    for feed in all_written_feeds:
+      print(feed[0])
+      for location in feed[1]:
+        print(f"  {location}")
+
 
 # Merge source's episodes into dest's channel
 # both should be ET objects
@@ -250,6 +262,7 @@ def download_file(url):
     return content
 
 def write_feed(feed, rss):
+    written_feeds=[]
     if 'FF_NO_WRITE_FEED' in os.environ:
         logging.info("FF_NO_WRITE_FEED set; not writing feed")
         return
@@ -261,8 +274,12 @@ def write_feed(feed, rss):
         logging.info(f"Writing output feed to '{feed['output']['file']['path']}'")
         with open(feed['output']['file']['path'], "w") as f:
             print(rss, file=f)
-    if 's3' in feed['output']:
-        upload_file_s3(rss, feed['output']['s3'])
+        written_feeds.append(feed['output']['file']['path'])
 
+    if 's3' in feed['output']:
+        url=upload_file_s3(rss, feed['output']['s3'])
+        written_feeds.append(url)
+
+    return [feed['name'], written_feeds]
 
 main()
