@@ -16,7 +16,7 @@ import json
 def main():
     all_written_feeds = []
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
-    if 'LOGLEVEL' in os.environ:
+    if 'FF_LOGLEVEL' in os.environ:
         logging.getLogger().setLevel(os.environ['FF_LOGLEVEL'])
 
     config_file = './feeds.yaml'
@@ -48,6 +48,8 @@ def main():
         logging.info(f"Processing feed '{feed['name']}' from '{feed['feed_url']}'")
 
         root = filter_rss_feed( feed )
+        if(len(root) == 0):
+            continue
         if 'merge_in' in feed:
             logging.debug(f"Merging")
             for url in feed['merge_in']:
@@ -86,6 +88,8 @@ def merge_feeds(source, dest):
 # Returns the ET representation of the feed
 def filter_rss_feed(feed):
     rss = download_rss_file(feed['feed_url'])
+    if(len(rss) == 0):
+        return ''
     root = ET.fromstring(rss)
 
     if 'fiddles' in feed:
@@ -265,7 +269,13 @@ def download_rss_file(url):
 
 def download_file(url):
     logging.debug(f"Downloading {url}")
-    response = urllib.request.urlopen(url)
+    try:
+        response = urllib.request.urlopen(url)
+    except urllib.error.URLError as e:
+          logging.error(f"Failed to download '{url}':")
+          logging.error(e.reason)
+          return ''
+
     data = response.read();
     content = data.decode('utf-8')
     return content
