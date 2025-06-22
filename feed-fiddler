@@ -6,6 +6,7 @@ import logging
 import re
 import operator
 import boto3
+import urllib
 
 import xml.etree.ElementTree as ET
 import urllib.request
@@ -16,11 +17,18 @@ def main():
     all_written_feeds = []
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
     if 'LOGLEVEL' in os.environ:
-        logging.getLogger().setLevel(os.environ['LOGLEVEL'])
+        logging.getLogger().setLevel(os.environ['FF_LOGLEVEL'])
 
     config_file = './feeds.yaml'
-    if 'CONFIG_FILE' in os.environ:
-        config_file = os.environ['CONFIG_FILE']
+    if 'FF_CONFIG_FILE' in os.environ:
+        config_file = os.environ['FF_CONFIG_FILE']
+
+    if 'FF_CONFIG_FILE_S3_BUCKET' in os.environ:
+        config_file = '/tmp/feeds.yaml'
+        bucket = os.environ['FF_CONFIG_FILE_S3_BUCKET']
+        object = os.environ['FF_CONFIG_FILE_S3_OBJECT_NAME']
+        s3 = boto3.client('s3')
+        s3.download_file(bucket, object, config_file)
 
     config = {}
     with open(config_file, "r") as file:
@@ -29,7 +37,9 @@ def main():
         except yaml.YAMLError as err:
             print(err)
 
-    sys.argv.pop(0)
+    # It looks like sys.argv doesn't exist under Lambda
+    if sys.argv:
+        sys.argv.pop(0)
     for feed in config['feeds']:
         if sys.argv:
             if feed['name'] not in sys.argv:
@@ -240,7 +250,7 @@ def upload_file_s3(content, config):
     object_name = config['object']
     logging.info(f"S3 upload: writing object '{object_name}' to bucket '{bucket_name}'")
     s3 = boto3.resource('s3')
-    s3.Object(bucket_name, object_name).put(Body=content, ACL='public-read', ContentType='application/rss+xml')
+    s3.Object(bucket_name, object_name).put(Body=content, ContentType='application/rss+xml')
 
     region = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
     url="https://" + bucket_name + ".s3." + region + ".amazonaws.com/" + object_name;
@@ -270,15 +280,21 @@ def write_feed(feed, rss):
         print(rss)
         return
     if 'file' in feed['output']:
-        logging.info(f"Writing output feed to '{feed['output']['file']['path']}'")
-        with open(feed['output']['file']['path'], "w") as f:
-            print(rss, file=f)
-        written_feeds.append(feed['output']['file']['path'])
+        if 'FF_IS_LAMBDA' in os.environ:
+            logging.info('Running as lambda; skipping `file` options and writing nothin glocally')
+        else:
+            logging.info(f"Writing output feed to '{feed['output']['file']['path']}'")
+            with open(feed['output']['file']['path'], "w") as f:
+                print(rss, file=f)
+            written_feeds.append(feed['output']['file']['path'])
 
     if 's3' in feed['output']:
         url=upload_file_s3(rss, feed['output']['s3'])
         written_feeds.append(url)
 
     return [feed['name'], written_feeds]
+
+def lambda_handler(event, context):
+    main()
 
 main()

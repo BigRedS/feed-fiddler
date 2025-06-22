@@ -1,2 +1,8 @@
 *.rss
 .venv
+.terraform*
+terraform*
+deploy/*.zip
+deploy/terraform*
+deploy/.terraform*
+deploy/package/*

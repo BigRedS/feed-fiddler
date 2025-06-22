@@ -147,9 +147,11 @@ Some environment variables are supported:
 * `LOGLEVEL` is provided by the `logging` library; set this to `DEBUG` to get a lot of output from the filtering and fiddling processes
 
 
-# Running in Python venv
+# Installing locally
 
-You will need python and virtualenv installed. See
+On debian and friends you can just get the packages from the distro repos - Check the repo out and install its dependencies: `apt-get install python3-boto3 python3-yaml`
+
+If you prefer, I've used Python's venv; for which you will need python3 and virtualenv installed. See
 
 https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
 
@@ -157,3 +159,15 @@ in the root of the repo, do
 
     source .venv/bin/activate
     pip install -r ./requirements.txt
+
+Then either have your feeds yaml file at `./feeds.yaml` or its path set in the environment variable `FF_CONFIG_FILE`
+
+# Installing as an AWS Lambda
+
+All the bits for this live in `./deploy` so cd into there first
+
+Next, run the `./make_lambda_package.sh` script; this will create a zipfile called `lambda_package.zip` containing the feed-fiddler script, renamed as `lambda_handler`, and all its dependencies, which can be deployed to AWS.
+
+Check the vars.tf file. The bucket names, `aws_region` and  `feeds_config_file` are most-likely to need changing.
+
+Then run `tofu apply` or `terraform apply` and wait; you'll get a lambda function scheduled to run this every day.
