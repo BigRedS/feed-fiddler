@@ -225,6 +225,12 @@ def fiddle_append_to_title(feed, config):
         new_title = (f"{imagetitle.text} {config['string']}")
         imagetitle.text = new_title
 
+def fiddle_prepend_to_title(feed, config):
+    logging.info(f"Prepending '{config['string']}' to title")
+    title = feed.find('channel/title')
+    new_title = (f"{config['string']} {title.text}")
+    title.text = new_title
+
 def fiddle_replace_title(feed, config):
     logging.info(f"Setting title to '{config['string']}'")
     title = feed.find('channel/title')
@@ -240,6 +246,7 @@ def fiddle_replace_feed_image(feed, config):
 
 fiddle_dispatch = {
     'append_to_title': fiddle_append_to_title,
+    'prepend_to_title': fiddle_prepend_to_title,
     'replace_title' : fiddle_replace_title,
     'replace_feed_image': fiddle_replace_feed_image
 }

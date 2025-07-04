@@ -15,9 +15,9 @@ feeds:
           operator: lessThan
           minutes: 12
     fiddles:
-      - fiddle: append_to_title
+      - fiddle: prepend_to_title
         config:
-          string: "[R4]"
+          string: "FF"
       - fiddle: replace_feed_image
         config:
           url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
@@ -42,9 +42,9 @@ feeds:
           pattern: "Audio Long Read"
           action: exclude
     fiddles:
-      - fiddle: append_to_title
+      - fiddle: prepend_to_title
         config:
-          string: "[filtered]"
+          string: "FF"
 
   # Remove the book club episodes from RHLSTP
   - name: rhlstp
@@ -60,9 +60,9 @@ feeds:
           pattern: "^RHLSTP Book Club"
           action: exclude
     fiddles:
-      - fiddle: append_to_title
+      - fiddle: prepend_to_title
         config:
-          string: "[no book club]"
+          string: "FF"
 
   # Remove the various serialisations from We Have Ways
   - name: wehaveways
@@ -78,6 +78,13 @@ feeds:
           field: title
           pattern: Family Stories Series
           action: exclude
+    fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
+      - fiddle: append_to_title
+        config:
+          string: "[no books]"
     output:
       s3:
         bucket: feed-fiddler
@@ -99,6 +106,9 @@ feeds:
           pattern: "Book Club"
           action: exclude
     fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
       - fiddle: append_to_title
         config:
           string: "[no books]"
