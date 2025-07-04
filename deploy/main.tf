@@ -107,7 +107,9 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
         ],
         Resource = [
           "${aws_s3_bucket.config_bucket.arn}/*",
-          "${aws_s3_bucket.feeds_bucket.arn}/*"
+          "${aws_s3_bucket.config_bucket.arn}",
+          "${aws_s3_bucket.feeds_bucket.arn}/*",
+          "${aws_s3_bucket.feeds_bucket.arn}"
         ]
       }
     ]
