@@ -136,6 +136,15 @@
       <a class="rss-btn" href="https://feed-fiddler.s3.amazonaws.com/se2kb.rss" title="Subscribe in podcast app"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="5" cy="19" r="2.5"/><path d="M4 4a16 16 0 0 1 16 16h-3A13 13 0 0 0 4 7V4z"/><path d="M4 11a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6v-3z"/></svg> Subscribe</a>
     </div>
   </article>
+  <article class="card">
+    <h2>you're dead to me</h2>
+    <ul class="notes"><li>Episodes under 19 minutes removed</li><li>Feed title suffixed with “FF”</li></ul>
+    <div class="url-row">
+      <input class="url" type="text" value="https://feed-fiddler.s3.amazonaws.com/ydtm.rss" readonly>
+      <button class="copy" onclick="copy(this)">Copy</button>
+      <a class="rss-btn" href="https://feed-fiddler.s3.amazonaws.com/ydtm.rss" title="Subscribe in podcast app"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="5" cy="19" r="2.5"/><path d="M4 4a16 16 0 0 1 16 16h-3A13 13 0 0 0 4 7V4z"/><path d="M4 11a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6v-3z"/></svg> Subscribe</a>
+    </div>
+  </article>
   <script>
     function copy(btn) {
       navigator.clipboard.writeText(btn.previousElementSibling.value).then(() => {
