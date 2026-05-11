@@ -1,9 +1,9 @@
 # This used to be an illustrative example, but now it's just the config I'm using,
 # hopefully with some useful comments.
 
-# Filter out episodes from More Or Less that are less than 12 minutes long
 feeds:
   - name: more or less
+    description: Filter out the short episodes that are excerpts from the normal ones
     feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
     output:
       s3:
@@ -22,9 +22,9 @@ feeds:
         config:
           url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
 
-  # Remove the 'sponsored' and 'Long Read' episodes from the New Stateman
 
   - name: New Statesman
+    description: Remove the 'sponsored' and 'Long Read' episodes
     feed_url: https://feeds.acast.com/public/shows/6b2fc9ba-b9b7-4b7a-b980-e0024facd926
     output:
       s3:
@@ -46,8 +46,8 @@ feeds:
         config:
           string: "FF"
 
-  # Remove the book club episodes from RHLSTP
   - name: rhlstp
+    description: Remove the book club episodes from Richard Herring's Leicester Square Theatre Podcast
     feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
     output:
       s3:
@@ -64,8 +64,8 @@ feeds:
         config:
           string: "FF"
 
-  # Remove the various serialisations from We Have Ways
   - name: wehaveways
+    description: Remove the various serialisations from We Have Ways, just the 'normal' episodes
     feed_url: https://feeds.acast.com/public/shows/e03faa80-0d1d-48ec-b56e-8682ef62761e
     filters:
       - filter: regex
@@ -90,8 +90,8 @@ feeds:
         bucket: feed-fiddler
         object: wehaveways.rss
 
-  # Remove the book club episodes from Smart Enough To Know Better
   - name: smart enough to know better
+    description: SE2KB without the book club episodes
     feed_url: https://smartenough.org/feed
     output:
       file:
