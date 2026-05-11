@@ -112,3 +112,21 @@ feeds:
       - fiddle: append_to_title
         config:
           string: "[no books]"
+
+
+  - name: you're dead to me
+    description: Remove the Dead Funny History episodes
+    feed_url: https://podcasts.files.bbci.co.uk/p07mdbhg.rss
+    output:
+      s3:
+        object: ydtm.rss
+        bucket: feed-fiddler
+    filters:
+      - filter: duration
+        config:
+          operator: lessThan
+          minutes: 19
+    fiddles:
+      - fiddle: append_to_title
+        config:
+          string: "FF"
