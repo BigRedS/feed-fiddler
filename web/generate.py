@@ -54,13 +54,14 @@ def load_feeds():
             desc = describe_fiddle(fiddle)
             if desc:
                 notes.append(desc)
-        feeds.append({'name': feed['name'], 'url': url, 'notes': notes})
+        feeds.append({'name': feed['name'], 'description': feed.get('description', ''), 'url': url, 'notes': notes})
     return feeds
 
 
 def render_html(feeds):
     cards = ''
     for feed in feeds:
+        desc_html = f'<p class="desc">{feed["description"]}</p>' if feed['description'] else ''
         notes_html = ''
         if feed['notes']:
             items = ''.join(f'<li>{n}</li>' for n in feed['notes'])
@@ -68,6 +69,7 @@ def render_html(feeds):
         cards += f'''
   <article class="card">
     <h2>{feed["name"]}</h2>
+    {desc_html}
     {notes_html}
     <div class="url-row">
       <input class="url" type="text" value="{feed["url"]}" readonly>
@@ -111,7 +113,8 @@ def render_html(feeds):
       padding: 1.25rem 1.5rem;
       box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }}
-    h2 {{ font-size: 1.05rem; text-transform: capitalize; margin-bottom: 0.5rem; }}
+    h2 {{ font-size: 1.05rem; text-transform: capitalize; margin-bottom: 0.4rem; }}
+    .desc {{ font-size: 0.925rem; color: #444; margin-bottom: 0.5rem; }}
     .notes {{
       font-size: 0.875rem;
       color: #555;
