@@ -7,6 +7,19 @@ provider "aws" {
   }
 }
 
+# CloudFront requires ACM certificates to live in us-east-1
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+  default_tags {
+    tags = {
+      repo = "https://github.com/BigRedS/feed-fiddler"
+    }
+  }
+}
+
+provider "null" {}
+
 variable "feeds_bucket" {
   default = "feed-fiddler-feeds"
   description = "Name of the public feeds bucket"

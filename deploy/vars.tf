@@ -39,3 +39,15 @@ variable "lambda_timeout_seconds" {
   type = number
   default = "90"
 }
+
+variable "web_bucket_name" {
+  description = "S3 bucket for the feed-fiddler web UI (served via CloudFront)"
+  default     = "feed-fiddler-web"
+  type        = string
+}
+
+variable "web_domain" {
+  description = "Optional custom domain for the web UI (e.g. feeds.example.com). Leave empty to use the default cloudfront.net address."
+  default     = "feed-fiddler.cubanyetis.net"
+  type        = string
+}

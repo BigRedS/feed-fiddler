@@ -1,6 +1,8 @@
 # Feed Fiddler
 
-For fiddling with podcast feeds.
+<img src="web/icon.png" width="96" alt="Feed Fiddler icon">
+
+For fiddling with podcast feeds. Hosted at [feed-fiddler.cubanyetis.net](https://feed-fiddler.cubanyetis.net/).
 
 This was inspired by my wanting to be able to filter out some episodes from podcast feeds. It's a way of creating a new feed based on some modifications to an existing one.
 
@@ -171,3 +173,45 @@ Next, run the `./make_lambda_package.sh` script; this will create a zipfile call
 Check the vars.tf file. The bucket names, `aws_region` and  `feeds_config_file` are most-likely to need changing.
 
 Then run `tofu apply` or `terraform apply` and wait; you'll get a lambda function scheduled to run this every day.
+
+# Web UI
+
+There's a small static web page in `./web` that lists all the generated feeds and their URLs, so you have somewhere to point people.
+
+To regenerate it after changing `feeds.yaml`, run:
+
+    python web/generate.py
+
+This reads `feeds.yaml` and overwrites `web/index.html`. It's a self-contained HTML file with no external dependencies, so you can open it locally to check it before deploying.
+
+The page is deployed as part of the same `tofu apply` as the Lambda — it gets uploaded to a separate S3 bucket and served via CloudFront. After applying, the URL is printed as the `web_url` output:
+
+    tofu output web_url
+
+## Serving from a custom subdomain
+
+By default the page is served from a `*.cloudfront.net` address. To serve it from a subdomain you own, set `web_domain` in `deploy/terraform.tfvars` (create that file if it doesn't exist):
+
+```hcl
+web_domain = "feeds.example.com"
+```
+
+Then run `tofu init` (needed once to fetch the `null` provider) followed by `tofu apply`.
+
+The apply will pause after creating the ACM certificate and print a CNAME record to the terminal, something like:
+
+```
+==> Certificate created. Add this CNAME record in your DNS provider:
+    Name:  _abc123.feeds.example.com
+    Value: _xyz789.acm-validations.aws.
+
+    Waiting for validation (usually a few minutes after the record propagates)...
+```
+
+Add that CNAME in your DNS provider. Once it propagates, ACM will validate the certificate and the apply will continue, updating the CloudFront distribution automatically.
+
+When the apply finishes, add a second CNAME to point your subdomain at CloudFront:
+
+    tofu output web_cloudfront_cname_target   # e.g. xxxxxxxxxxxx.cloudfront.net
+
+Add a CNAME: `feeds.example.com` → the value shown above. Your page will be live at `https://feeds.example.com` within a few minutes.
