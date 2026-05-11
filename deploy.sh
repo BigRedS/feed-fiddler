@@ -45,3 +45,10 @@ if [ -n "$DIST_ID" ]; then
     echo "Invalidating CloudFront cache..."
     aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*" --output text
 fi
+
+LAMBDA_ARN=$("$TF" output -raw lambda_arn 2>/dev/null || true)
+REGION=$("$TF" output -raw aws_region 2>/dev/null || true)
+if [ -n "$LAMBDA_ARN" ]; then
+    echo "Invoking Lambda..."
+    aws lambda invoke --function-name "$LAMBDA_ARN" --invocation-type Event --region "$REGION" /dev/null
+fi

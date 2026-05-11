@@ -79,6 +79,10 @@ output "lambda_arn" {
   value = aws_lambda_function.feed_fiddler_function.arn
 }
 
+output "aws_region" {
+  value = var.aws_region
+}
+
 # Lambda IAM Role
 resource "aws_iam_role" "lambda_role" {
   name = "lambda_s3_access_role"
