@@ -46,6 +46,7 @@ resource "aws_lambda_function" "feed_fiddler_function" {
   filename         = var.lambda_function_zipfile
   source_code_hash = filebase64sha256(var.lambda_function_zipfile)
   timeout          = var.lambda_timeout_seconds
+  memory_size      = var.lambda_memory_mb
 
   environment {
     variables = {

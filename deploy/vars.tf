@@ -40,6 +40,12 @@ variable "lambda_timeout_seconds" {
   default = "90"
 }
 
+variable "lambda_memory_mb" {
+  description = "Memory limit for the Lambda function in MB"
+  type        = number
+  default     = 256
+}
+
 variable "web_bucket_name" {
   description = "S3 bucket for the feed-fiddler web UI (served via CloudFront)"
   default     = "feed-fiddler-web"
