@@ -7,6 +7,17 @@ provider "aws" {
   }
 }
 
+
+terraform {
+  backend "s3" {
+    bucket         = "avis-tf-state"
+    key            = "feed-fiddler/terraform.tfstate"
+    region         = "eu-north-1"
+    encrypt        = true
+    use_lockfile   = true
+  }
+}
+
 # CloudFront requires ACM certificates to live in us-east-1
 provider "aws" {
   alias  = "us_east_1"
