@@ -6,3 +6,4 @@ deploy/*.zip
 deploy/terraform*
 deploy/.terraform*
 deploy/package/*
+web/index.html
