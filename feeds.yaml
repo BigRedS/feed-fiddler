@@ -115,7 +115,7 @@ feeds:
 
 
   - name: you're dead to me
-    description: Remove the Dead Funny History episodes
+    description: Remove the Dead Funny History episodes and the Radio Edit repeates
     feed_url: https://podcasts.files.bbci.co.uk/p07mdbhg.rss
     output:
       s3:
@@ -126,6 +126,11 @@ feeds:
         config:
           operator: lessThan
           minutes: 19
+      - filter: regex
+        config:
+          field: title
+          pattern: "(Radio Edit)"
+          action: exclude
     fiddles:
       - fiddle: append_to_title
         config:
