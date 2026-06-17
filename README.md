@@ -157,8 +157,9 @@ If you prefer, I've used Python's venv; for which you will need python3 and virt
 
 https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
 
-in the root of the repo, do
+and in the root of the repo, do
 
+    python3 -m venv .venv
     source .venv/bin/activate
     pip install -r ./requirements.txt
 
@@ -166,13 +167,22 @@ Then either have your feeds yaml file at `./feeds.yaml` or its path set in the e
 
 # Installing as an AWS Lambda
 
-All the bits for this live in `./deploy` so cd into there first
+This is deployed via Tofu/Terraform, so first check the `vars.tf` for variables to change, most likely aws_region and the bucket names.
 
-Next, run the `./make_lambda_package.sh` script; this will create a zipfile called `lambda_package.zip` containing the feed-fiddler script, renamed as `lambda_handler`, and all its dependencies, which can be deployed to AWS.
+Then the script `./deploy.sh` should do all this for you, but in case you're interested the steps are:
 
-Check the vars.tf file. The bucket names, `aws_region` and  `feeds_config_file` are most-likely to need changing.
+1. Generate the web UI:
 
-Then run `tofu apply` or `terraform apply` and wait; you'll get a lambda function scheduled to run this every day.
+  .venv/bin/python ./web/generate.py
+
+2. Generate the zipfile to submit as the lambda function:
+
+    cd deploy
+    ./make_lambda_package.sh
+
+3. Run the Tofu/Terraform:
+
+    tf apply
 
 # Web UI
 

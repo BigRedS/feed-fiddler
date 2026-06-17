@@ -16,6 +16,12 @@ echo "Installing Python dependencies..."
 echo "Generating web UI..."
 "$VENV/bin/python" "$REPO/web/generate.py"
 
+# --- lambda package ---
+echo "Generating lambda package..."
+cd "$REPO/deploy"
+"$REPO/deploy/make_lambda_package.sh"
+cd "$REPO"
+
 # --- terraform ---
 cd "$REPO/deploy"
 
