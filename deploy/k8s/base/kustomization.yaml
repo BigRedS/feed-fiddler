@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: feed-fiddler
+
+# No Namespace object here — that's owned by whichever repo actually deploys
+# this (its own _namespace.yaml/namespace.yaml), same reasoning as the
+# Ingress note below.
+resources:
+  - pvc.yaml
+  - cronjob.yaml
+  - nginx-deployment.yaml
+  - nginx-service.yaml
+
+# No Ingress here — that's cluster/domain-specific (host, ingress class,
+# cert-manager issuer), so it's left to whichever repo actually deploys
+# this, pointed at the feed-fiddler-web Service above. See e.g.
+# https://github.com/BigRedS/farfaraway/tree/main/feed-fiddler.
+
+# Illustrative default — every real deployment overrides this in its own
+# consuming repo (configMapGenerator with behavior: replace) with its
+# actual feeds.
+# Content-hashed, so a config change produces a new ConfigMap and the
+# CronJob picks it up next run — no manual restart needed.
+configMapGenerator:
+  - name: feed-fiddler-config
+    files:
+      - feeds.yaml=feeds.example.yaml
+
+# Always :latest — the CronJob's imagePullPolicy: Always means each run
+# re-pulls the freshest image pushed by CI (.github/workflows/build-image.yaml)
+# or by deploy-k8s.sh.
+images:
+  - name: feed-fiddler
+    newName: ghcr.io/bigreds/feed-fiddler
+    newTag: latest
