@@ -1,0 +1,14 @@
+# Illustrative only. Every real deployment replaces this via its overlay's
+# own configMapGenerator with its own feeds/filters/fiddles and `file` outputs
+# under /output/.
+feeds:
+  - name: more or less
+    feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
+    filters:
+      - filter: duration
+        config:
+          operator: lessThan
+          minutes: 10
+    output:
+      file:
+        path: /output/moreorless.rss

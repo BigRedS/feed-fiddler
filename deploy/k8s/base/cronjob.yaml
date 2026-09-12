@@ -1,5 +1,3 @@
-# CHANGEME: the --base-url below must match the `host` in ingress.yaml.
-# It's currently a staging subdomain, separate from the live AWS one.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -25,12 +23,15 @@ spec:
                   python3 ./feed-fiddler &&
                   python3 ./web/generate.py
                   --feeds-file /etc/feed-fiddler/feeds.yaml
-                  --base-url https://feed-fiddler-k8s.cubanyetis.net/
+                  --base-url "$FEED_FIDDLER_BASE_URL"
                   --output /output/index.html &&
                   cp ./web/icon.png /output/icon.png
               env:
                 - name: FF_CONFIG_FILE
                   value: /etc/feed-fiddler/feeds.yaml
+                # Must match ingress.yaml's host in whichever overlay sets both.
+                - name: FEED_FIDDLER_BASE_URL
+                  value: https://feed-fiddler.example.com/
               volumeMounts:
                 - name: config
                   mountPath: /etc/feed-fiddler
