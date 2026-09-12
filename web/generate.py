@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate index.html from feeds.yaml."""
+import argparse
 import os
 import yaml
 
@@ -37,16 +38,23 @@ def describe_fiddle(f):
     return None
 
 
-def load_feeds():
-    with open(os.path.join(PROJECT_ROOT, 'feeds.yaml')) as fh:
+def load_feeds(feeds_file, base_url=None):
+    with open(feeds_file) as fh:
         config = yaml.safe_load(fh)
 
     feeds = []
     for feed in config.get('feeds', []):
-        s3 = feed.get('output', {}).get('s3')
-        if not s3:
-            continue
-        url = f"https://{s3['bucket']}.s3.amazonaws.com/{s3['object']}"
+        output = feed.get('output', {})
+        if base_url:
+            file_output = output.get('file')
+            if not file_output:
+                continue
+            url = base_url.rstrip('/') + '/' + os.path.basename(file_output['path'])
+        else:
+            s3 = output.get('s3')
+            if not s3:
+                continue
+            url = f"https://{s3['bucket']}.s3.amazonaws.com/{s3['object']}"
         notes = []
         for filt in feed.get('filters', []):
             notes.append(describe_filter(filt))
@@ -187,12 +195,21 @@ def render_html(feeds):
 
 
 def main():
-    feeds = load_feeds()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--feeds-file', default=os.path.join(PROJECT_ROOT, 'feeds.yaml'),
+                         help="Path to the feeds config to read (default: %(default)s)")
+    parser.add_argument('--base-url',
+                         help="Build feed URLs from each feed's 'file' output path, relative to "
+                              "this base URL, instead of its 's3' output block")
+    parser.add_argument('--output', default=os.path.join(SCRIPT_DIR, 'index.html'),
+                         help="Where to write the generated index.html (default: %(default)s)")
+    args = parser.parse_args()
+
+    feeds = load_feeds(args.feeds_file, base_url=args.base_url)
     html = render_html(feeds)
-    out = os.path.join(SCRIPT_DIR, 'index.html')
-    with open(out, 'w', encoding='utf-8') as fh:
+    with open(args.output, 'w', encoding='utf-8') as fh:
         fh.write(html)
-    print(f'Written {out}')
+    print(f'Written {args.output}')
 
 
 if __name__ == '__main__':

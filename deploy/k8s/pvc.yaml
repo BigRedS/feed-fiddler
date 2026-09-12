@@ -1,0 +1,19 @@
+# Holds the generated .rss files, index.html and icon.png. Written by the
+# CronJob, served read-only by the nginx Deployment. Uses the cluster's
+# default StorageClass — set storageClassName explicitly below if there
+# isn't one marked default.
+#
+# ReadWriteOnce: with a node-local StorageClass (e.g. local-path-provisioner)
+# this pins the volume to whichever node first claims it; k8s then schedules
+# both the CronJob's pods and the nginx Deployment's pod to that same node
+# automatically, so they can mount it concurrently.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: feed-fiddler-output
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
