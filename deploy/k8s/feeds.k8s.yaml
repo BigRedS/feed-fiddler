@@ -1,0 +1,130 @@
+# k8s CronJob variant of feeds.yaml: same feeds/filters/fiddles as ../feeds.yaml
+# (the AWS/Lambda config), but with `file` outputs into the PVC mount instead of
+# `s3` outputs, since the CronJob has no AWS credentials and FF_IS_LAMBDA is unset
+# here (so `file` outputs are not disabled). Keep in sync by hand when the feed
+# list changes.
+
+feeds:
+  - name: more or less
+    description: Filter out the short episodes that are excerpts from the normal ones
+    feed_url: https://podcasts.files.bbci.co.uk/p02nrss1.rss
+    output:
+      file:
+        path: /output/moreorless.rss
+    filters:
+      - filter: duration
+        config:
+          operator: lessThan
+          minutes: 12
+    fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
+      - fiddle: replace_feed_image
+        config:
+          url: https://notdrills.s3.eu-west-2.amazonaws.com/till.webp
+
+  - name: New Statesman
+    description: Remove the 'sponsored' and 'Long Read' episodes
+    feed_url: https://feeds.acast.com/public/shows/6b2fc9ba-b9b7-4b7a-b980-e0024facd926
+    output:
+      file:
+        path: /output/newstatesman.rss
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: "Sponsored"
+          action: exclude
+      - filter: regex
+        config:
+          field: title
+          pattern: "Audio Long Read"
+          action: exclude
+    fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
+
+  - name: rhlstp
+    description: Remove the book club episodes from Richard Herring's Leicester Square Theatre Podcast
+    feed_url: https://access.acast.com/rss/aacb15fc-f2a9-43e6-9d0f-521463063cef/
+    output:
+      file:
+        path: /output/rhlstp.rss
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: "^RHLSTP Book Club"
+          action: exclude
+    fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
+
+  - name: wehaveways
+    description: Remove the various serialisations from We Have Ways, just the 'normal' episodes
+    feed_url: https://feeds.acast.com/public/shows/e03faa80-0d1d-48ec-b56e-8682ef62761e
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: Between The Lines
+          action: exclude
+      - filter: regex
+        config:
+          field: title
+          pattern: Family Stories Series
+          action: exclude
+    fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
+      - fiddle: append_to_title
+        config:
+          string: "[no books]"
+    output:
+      file:
+        path: /output/wehaveways.rss
+
+  - name: smart enough to know better
+    description: SE2KB without the book club episodes
+    feed_url: https://smartenough.org/feed
+    output:
+      file:
+        path: /output/se2kb.rss
+    filters:
+      - filter: regex
+        config:
+          field: title
+          pattern: "Book Club"
+          action: exclude
+    fiddles:
+      - fiddle: prepend_to_title
+        config:
+          string: "FF"
+      - fiddle: append_to_title
+        config:
+          string: "[no books]"
+
+  - name: you're dead to me
+    description: Remove the Dead Funny History episodes and the Radio Edit repeates
+    feed_url: https://podcasts.files.bbci.co.uk/p07mdbhg.rss
+    output:
+      file:
+        path: /output/ydtm.rss
+    filters:
+      - filter: duration
+        config:
+          operator: lessThan
+          minutes: 19
+      - filter: regex
+        config:
+          field: title
+          pattern: "(Radio Edit)"
+          action: exclude
+    fiddles:
+      - fiddle: append_to_title
+        config:
+          string: "FF"

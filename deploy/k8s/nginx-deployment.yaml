@@ -1,0 +1,30 @@
+# Permanently-running web server. Not part of the CronJob: it just serves
+# whatever the CronJob last wrote to the shared PVC, so a CronJob run never
+# needs to restart it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feed-fiddler-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feed-fiddler-web
+  template:
+    metadata:
+      labels:
+        app: feed-fiddler-web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:stable
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: output
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+      volumes:
+        - name: output
+          persistentVolumeClaim:
+            claimName: feed-fiddler-output
