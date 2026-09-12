@@ -1,0 +1,46 @@
+# CHANGEME: the --base-url below must match the `host` in ingress.yaml.
+# It's currently a staging subdomain, separate from the live AWS one.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: feed-fiddler
+spec:
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: feed-fiddler
+              image: feed-fiddler
+              imagePullPolicy: Always
+              command: ["sh", "-c"]
+              args:
+                - >-
+                  python3 ./feed-fiddler &&
+                  python3 ./web/generate.py
+                  --feeds-file /etc/feed-fiddler/feeds.yaml
+                  --base-url https://feed-fiddler-k8s.cubanyetis.net/
+                  --output /output/index.html &&
+                  cp ./web/icon.png /output/icon.png
+              env:
+                - name: FF_CONFIG_FILE
+                  value: /etc/feed-fiddler/feeds.yaml
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/feed-fiddler
+                  readOnly: true
+                - name: output
+                  mountPath: /output
+          volumes:
+            - name: config
+              configMap:
+                name: feed-fiddler-config
+            - name: output
+              persistentVolumeClaim:
+                claimName: feed-fiddler-output
