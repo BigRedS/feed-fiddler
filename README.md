@@ -184,6 +184,31 @@ Then the script `./deploy.sh` should do all this for you, but in case you're int
 
     tf apply
 
+# Installing on Kubernetes
+
+This deploys a CronJob to do the fetching and processing of the feeds and an Nginx pod to serve the fiddled feeds and the web UI.
+
+`feeds.yaml` remains S3-orientated, so a k8s deployment needs its own `feeds.k8s.yaml` alongside it, with the same config but `file` rather than `s3` outputs.
+
+`deploy/k8s/base` is a generic kustomize base. 
+
+```yaml
+# in some other repo:
+resources:
+  - _namespace.yaml
+  - github.com/BigRedS/feed-fiddler//deploy/k8s/base?ref=main
+  - ingress.yaml   # your own, pointing at the feed-fiddler-web Service
+configMapGenerator:
+  - name: feed-fiddler-config
+    behavior: replace
+    files:
+      - feeds.yaml=feeds.k8s.yaml   # your own feed list
+patches:
+  - path: cronjob-patch.yaml   # sets FEED_FIDDLER_BASE_URL to match your ingress host
+```
+
+My actual deployment lives in [BigRedS/farfaraway](https://github.com/BigRedS/farfaraway), not in this repo — that's the reference example to copy.
+
 # Web UI
 
 There's a small static web page in `./web` that lists all the generated feeds and their URLs, so you have somewhere to point people.
